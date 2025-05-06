@@ -101,9 +101,9 @@ void MergeFiles(const PolygonalMesh& mesh, size_t numPolygons) {
     int ptsCount, cellCount, dummy;
 
     in.open("Cell0Ds.inp");
-    getline(in, line); // title
-    getline(in, line); // counts
-    // grab counts if needed
+    getline(in, line); 
+    getline(in, line); 
+    
     {
         stringstream ss(line);
         ss >> ptsCount >> cellCount >> dummy;
@@ -113,29 +113,27 @@ void MergeFiles(const PolygonalMesh& mesh, size_t numPolygons) {
 
     
     in.open("Cell2Ds.inp");
-    getline(in, line); // title
-    getline(in, line); // counts: pts polygons
+    getline(in, line); 
+    getline(in, line); 
     {
         stringstream ss(line);
         ss >> ptsCount >> cellCount >> dummy;
     }
-    // skip ptsCount lines of coords
+    
     for (int i = 0; i < ptsCount; ++i) getline(in, line);
-    // copy polygon definitions
     out << in.rdbuf();
     in.close();
 
    
     in.open("Cell1Ds.inp");
-    getline(in, line); // title
-    getline(in, line); // counts: pts segments
+    getline(in, line); 
+    getline(in, line); 
     {
         stringstream ss(line);
         ss >> ptsCount >> cellCount >> dummy;
     }
-    // skip ptsCount lines of coords
+    
     for (int i = 0; i < ptsCount; ++i) getline(in, line);
-    // copy segment definitions
     out << in.rdbuf();
     in.close();
 
@@ -163,7 +161,7 @@ int main() {
     Gedim::UCDUtilities utilities;
     vector<Gedim::UCDProperty<double>> emptyProps;
 
-    // Export Points
+   
     Eigen::VectorXi pointMats = Eigen::VectorXi::Zero(mesh.NumCell0Ds);
     utilities.ExportPoints(
         "Cell0Ds.inp",
