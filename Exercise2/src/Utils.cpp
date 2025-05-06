@@ -126,7 +126,7 @@ namespace PolygonalLibrary
 
             getline(ss, tmp, ';'); unsigned int id_tmp     = stoi(tmp);
             getline(ss, tmp, ';'); unsigned int marker_tmp = stoi(tmp);
-            // vertici
+           
             getline(ss, tmp, ';'); unsigned int nvert = stoi(tmp);
             vector<unsigned int> verts;
             verts.reserve(nvert);
@@ -134,7 +134,7 @@ namespace PolygonalLibrary
                 getline(ss, tmp, ';');
                 verts.push_back(mesh.Cell0DIdToIndex[stoi(tmp)]);
             }
-            // edges
+            
             getline(ss, tmp, ';'); unsigned int nedge = stoi(tmp);
             vector<unsigned int> eds;
             eds.reserve(nedge);
