@@ -15,7 +15,7 @@ using namespace PolygonalLibrary;
 
 const double EPS = 1e-12;
 
-// Validate that all markers are non-negative
+
 bool ValidateMarkers(const PolygonalMesh& mesh) {
     bool ok = true;
     for (size_t i = 0; i < mesh.Cell0DsMarker.size(); ++i) {
@@ -39,7 +39,7 @@ bool ValidateMarkers(const PolygonalMesh& mesh) {
     return ok;
 }
 
-// Validate that each edge has non-zero length
+
 bool ValidateEdgeLengths(const PolygonalMesh& mesh) {
     bool ok = true;
     for (size_t k = 0; k < mesh.Cell1DsOrigin.size(); ++k) {
@@ -56,7 +56,6 @@ bool ValidateEdgeLengths(const PolygonalMesh& mesh) {
     return ok;
 }
 
-// Compute polygon area using 2D shoelace formula
 bool ValidatePolygonAreas(const PolygonalMesh& mesh) {
     bool ok = true;
     for (size_t c = 0; c < mesh.Cell2DsVertices.size(); ++c) {
@@ -83,7 +82,7 @@ bool ValidatePolygonAreas(const PolygonalMesh& mesh) {
     return ok;
 }
 
-// MergeFiles: build UCD file reading counts from each .inp
+
 void MergeFiles(const PolygonalMesh& mesh, size_t numPolygons) {
     ifstream in;
     ofstream out("mesh.inp");
@@ -92,7 +91,7 @@ void MergeFiles(const PolygonalMesh& mesh, size_t numPolygons) {
         return;
     }
 
-    // Header: #points #polygons #segments
+ 
     out << "Merged mesh\n"
         << mesh.NumCell0Ds << " "
         << numPolygons        << " "
@@ -101,7 +100,6 @@ void MergeFiles(const PolygonalMesh& mesh, size_t numPolygons) {
     string line;
     int ptsCount, cellCount, dummy;
 
-    // 1) Points from Cell0Ds.inp
     in.open("Cell0Ds.inp");
     getline(in, line); // title
     getline(in, line); // counts
@@ -113,7 +111,7 @@ void MergeFiles(const PolygonalMesh& mesh, size_t numPolygons) {
     out << in.rdbuf();
     in.close();
 
-    // 2) Polygons from Cell2Ds.inp
+    
     in.open("Cell2Ds.inp");
     getline(in, line); // title
     getline(in, line); // counts: pts polygons
@@ -127,7 +125,7 @@ void MergeFiles(const PolygonalMesh& mesh, size_t numPolygons) {
     out << in.rdbuf();
     in.close();
 
-    // 3) Segments from Cell1Ds.inp
+   
     in.open("Cell1Ds.inp");
     getline(in, line); // title
     getline(in, line); // counts: pts segments
@@ -151,7 +149,7 @@ int main() {
     if (!ImportCell1Ds("Cell1Ds.csv", mesh)) return 1;
     if (!ImportCell2Ds("Cell2Ds.csv", mesh)) return 1;
 
-    // Validazioni mesh
+   
     if (!ValidateMarkers(mesh) || !ValidateEdgeLengths(mesh) || !ValidatePolygonAreas(mesh)) {
         cerr << "Validazione mesh fallita. Controlla gli errori sopra.\n";
         return 1;
@@ -175,7 +173,7 @@ int main() {
     );
     cout << "Esportati i punti in Cell0Ds.inp\n";
 
-    // Export Segments
+ 
     size_t numSeg = mesh.Cell1DsOrigin.size();
     Eigen::MatrixXi segments(2, numSeg);
     for (size_t i = 0; i < numSeg; ++i) {
@@ -193,7 +191,7 @@ int main() {
     );
     cout << "Esportati i segmenti in Cell1Ds.inp\n";
 
-    // Export Polygons (fan triangulation if N>3)
+    
     vector<vector<unsigned int>> tris1based;
     for (auto& verts : mesh.Cell2DsVertices) {
         size_t N = verts.size();
@@ -216,7 +214,7 @@ int main() {
     );
     cout << "Esportati i poligoni triangolati in Cell2Ds.inp\n";
 
-    // Merge into single UCD
+    
     MergeFiles(mesh, tris1based.size());
 
     return 0;
