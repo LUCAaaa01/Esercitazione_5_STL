@@ -2,7 +2,7 @@
 
 #include <iostream>
 #include <vector>
-#include <map> //
+#include <map>
 #include "Eigen/Eigen"
 
 using namespace std;
@@ -29,7 +29,7 @@ struct PolygonalMesh
     vector<vector<unsigned int>> Cell2DsVertices;
     vector<vector<unsigned int>> Cell2DsEdges;
 
-    map<unsigned int, unsigned int> Cell0DIdToIndex; // <--- AGGIUNTO
+    map<unsigned int, unsigned int> Cell0DIdToIndex;
 
     MatrixXd Cell0DsCoordinates;
     MatrixXd Cell1DsCoordinates;
