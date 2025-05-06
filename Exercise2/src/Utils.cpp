@@ -41,7 +41,7 @@ namespace PolygonalLibrary
             getline(ss, tmp, ';');
             double y_tmp = stod(tmp);
 
-            // memorizzo la mapping ID→indice
+            
             mesh.Cell0DIdToIndex[id_tmp] = id.size();
 
             id.push_back(id_tmp);
