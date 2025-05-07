@@ -160,4 +160,4 @@ bool ValidatePolygons(const PolygonalMesh& mesh)
     return true;
 }
 
-} // namespace PolygonalLibrary
+} 
