@@ -1,4 +1,3 @@
-// PolygonalMesh.hpp
 #pragma once
 
 #include <vector>
