@@ -31,4 +31,4 @@ struct PolygonalMesh
     std::map<unsigned int, unsigned int> Cell2DIdToIndex;
 };
 
-} // namespace PolygonalLibrary
+} 
