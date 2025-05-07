@@ -1,219 +1,69 @@
 #include <iostream>
-#include <string>
 #include <vector>
-#include <fstream>
-#include <sstream>
-#include <cmath>
-
 #include "PolygonalMesh.hpp"
 #include "Utils.hpp"
-#include "UCDUtilities.hpp"
-#include "Eigen/Dense"
+#include "ExportParaview/UCDUtilities.hpp"
 
-using namespace std;
 using namespace PolygonalLibrary;
 
-const double EPS = 1e-12;
-
-
-bool ValidateMarkers(const PolygonalMesh& mesh) {
-    bool ok = true;
-    for (size_t i = 0; i < mesh.Cell0DsMarker.size(); ++i) {
-        if ((int)mesh.Cell0DsMarker[i] < 0) {
-            cerr << "Errore: marker negativo in Cell0D all'indice " << i << "\n";
-            ok = false;
-        }
-    }
-    for (size_t i = 0; i < mesh.Cell1DsMarker.size(); ++i) {
-        if ((int)mesh.Cell1DsMarker[i] < 0) {
-            cerr << "Errore: marker negativo in Cell1D all'indice " << i << "\n";
-            ok = false;
-        }
-    }
-    for (size_t i = 0; i < mesh.Cell2DsMarker.size(); ++i) {
-        if ((int)mesh.Cell2DsMarker[i] < 0) {
-            cerr << "Errore: marker negativo in Cell2D all'indice " << i << "\n";
-            ok = false;
-        }
-    }
-    return ok;
+bool ValidateMarkers(const PolygonalMesh& mesh)
+{
+    for (auto mk : mesh.Cell0DsMarker)
+        if (int(mk) < 0) return false;
+    for (auto mk : mesh.Cell1DsMarker)
+        if (int(mk) < 0) return false;
+    return true;
 }
 
-
-bool ValidateEdgeLengths(const PolygonalMesh& mesh) {
-    bool ok = true;
-    for (size_t k = 0; k < mesh.Cell1DsOrigin.size(); ++k) {
-        unsigned int o = mesh.Cell1DsOrigin[k];
-        unsigned int e = mesh.Cell1DsEnd[k];
-        Eigen::Vector3d A = mesh.Cell0DsCoordinates.col(o);
-        Eigen::Vector3d B = mesh.Cell0DsCoordinates.col(e);
-        double length = (A - B).norm();
-        if (length < EPS) {
-            cerr << "Errore: segmento " << k << " ha lunghezza nulla o quasi nulla\n";
-            ok = false;
-        }
-    }
-    return ok;
+bool ValidateAll(const PolygonalMesh& mesh)
+{
+    return ValidateMarkers(mesh)
+        && ValidateEdges(mesh)
+        && ValidatePolygons(mesh);
 }
 
-bool ValidatePolygonAreas(const PolygonalMesh& mesh) {
-    bool ok = true;
-    for (size_t c = 0; c < mesh.Cell2DsVertices.size(); ++c) {
-        const auto& verts = mesh.Cell2DsVertices[c];
-        size_t n = verts.size();
-        if (n < 3) {
-            cerr << "Errore: Cell2D " << c << " ha meno di 3 vertici\n";
-            ok = false;
-            continue;
-        }
-        double area2 = 0.0;
-        for (size_t i = 0; i < n; ++i) {
-            size_t j = (i + 1) % n;
-            auto Pi = mesh.Cell0DsCoordinates.col(verts[i]);
-            auto Pj = mesh.Cell0DsCoordinates.col(verts[j]);
-            area2 += Pi.x() * Pj.y() - Pj.x() * Pi.y();
-        }
-        double area = 0.5 * fabs(area2);
-        if (area < EPS) {
-            cerr << "Errore: Cell2D " << c << " area nulla o quasi nulla: " << area << "\n";
-            ok = false;
-        }
-    }
-    return ok;
-}
-
-
-void MergeFiles(const PolygonalMesh& mesh, size_t numPolygons) {
-    ifstream in;
-    ofstream out("mesh.inp");
-    if (!out) {
-        cerr << "Errore: non posso creare mesh.inp\n";
-        return;
-    }
-
- 
-    out << "Merged mesh\n"
-        << mesh.NumCell0Ds << " "
-        << numPolygons        << " "
-        << mesh.NumCell1Ds    << "\n";
-
-    string line;
-    int ptsCount, cellCount, dummy;
-
-    in.open("Cell0Ds.inp");
-    getline(in, line); 
-    getline(in, line); 
-    
-    {
-        stringstream ss(line);
-        ss >> ptsCount >> cellCount >> dummy;
-    }
-    out << in.rdbuf();
-    in.close();
-
-    
-    in.open("Cell2Ds.inp");
-    getline(in, line); 
-    getline(in, line); 
-    {
-        stringstream ss(line);
-        ss >> ptsCount >> cellCount >> dummy;
-    }
-    
-    for (int i = 0; i < ptsCount; ++i) getline(in, line);
-    out << in.rdbuf();
-    in.close();
-
-   
-    in.open("Cell1Ds.inp");
-    getline(in, line); 
-    getline(in, line); 
-    {
-        stringstream ss(line);
-        ss >> ptsCount >> cellCount >> dummy;
-    }
-    
-    for (int i = 0; i < ptsCount; ++i) getline(in, line);
-    out << in.rdbuf();
-    in.close();
-
-    cout << "Creato mesh.inp in formato UCD unificato\n";
-}
-
-int main() {
+int main()
+{
     PolygonalMesh mesh;
-    // Import CSV
-    if (!ImportCell0Ds("Cell0Ds.csv", mesh)) return 1;
-    if (!ImportCell1Ds("Cell1Ds.csv", mesh)) return 1;
-    if (!ImportCell2Ds("Cell2Ds.csv", mesh)) return 1;
+    std::string folder = ".";
 
-   
-    if (!ValidateMarkers(mesh) || !ValidateEdgeLengths(mesh) || !ValidatePolygonAreas(mesh)) {
-        cerr << "Validazione mesh fallita. Controlla gli errori sopra.\n";
+    if (!ImportMesh(folder, mesh)) {
+        std::cerr << "Import mesh fallito\n";
         return 1;
     }
-    cout << "Mesh validata con successo!\n";
+    std::cout << "Mesh importata con successo!\n";
 
-    cout << "Numero di Cell0Ds: " << mesh.NumCell0Ds << "\n"
-         << "Numero di Cell1Ds: " << mesh.NumCell1Ds << "\n"
-         << "Numero di Cell2Ds: " << mesh.NumCell2Ds << "\n";
-
-    Gedim::UCDUtilities utilities;
-    vector<Gedim::UCDProperty<double>> emptyProps;
-
-   
-    Eigen::VectorXi pointMats = Eigen::VectorXi::Zero(mesh.NumCell0Ds);
-    utilities.ExportPoints(
-        "Cell0Ds.inp",
-        mesh.Cell0DsCoordinates,
-        emptyProps,
-        pointMats
-    );
-    cout << "Esportati i punti in Cell0Ds.inp\n";
-
- 
-    size_t numSeg = mesh.Cell1DsOrigin.size();
-    Eigen::MatrixXi segments(2, numSeg);
-    for (size_t i = 0; i < numSeg; ++i) {
-        segments(0, i) = mesh.Cell1DsOrigin[i] + 1;
-        segments(1, i) = mesh.Cell1DsEnd[i]    + 1;
+    if (!ValidateAll(mesh)) {
+        std::cerr << "Mesh non valida: marker, spigoli o poligoni errati.\n";
+        return 1;
     }
-    Eigen::VectorXi segMats = Eigen::VectorXi::Zero(numSeg);
-    utilities.ExportSegments(
-        "Cell1Ds.inp",
-        mesh.Cell0DsCoordinates,
-        segments,
-        emptyProps,
-        emptyProps,
-        segMats
-    );
-    cout << "Esportati i segmenti in Cell1Ds.inp\n";
+    std::cout << "La mesh è validata con successo!\n";
 
-    
-    vector<vector<unsigned int>> tris1based;
-    for (auto& verts : mesh.Cell2DsVertices) {
-        size_t N = verts.size();
-        if (N < 3) continue;
-        unsigned int v0 = verts[0] + 1;
-        for (size_t i = 1; i + 1 < N; ++i) {
-            tris1based.push_back({ v0,
-                                   verts[i]   + 1,
-                                   verts[i+1] + 1 });
-        }
+    Gedim::UCDUtilities util;
+
+    size_t num_points = mesh.NumCell0Ds;
+    Eigen::MatrixXd coords(3, num_points);
+    Eigen::VectorXi dummy_marker_0D(num_points);
+    for (size_t i = 0; i < num_points; ++i) {
+        coords(0, i) = mesh.Cell0DsCoordinates(0, i);
+        coords(1, i) = mesh.Cell0DsCoordinates(1, i);
+        coords(2, i) = mesh.Cell0DsCoordinates(2, i);
+        dummy_marker_0D(i) = mesh.Cell0DsMarker[i];
     }
-    Eigen::VectorXi polyMats = Eigen::VectorXi::Zero(tris1based.size());
-    utilities.ExportPolygons(
-        "Cell2Ds.inp",
-        mesh.Cell0DsCoordinates,
-        tris1based,
-        emptyProps,
-        emptyProps,
-        polyMats
-    );
-    cout << "Esportati i poligoni triangolati in Cell2Ds.inp\n";
 
-    
-    MergeFiles(mesh, tris1based.size());
+    size_t num_edges = mesh.NumCell1Ds;
+    Eigen::MatrixXi conn(2, num_edges);
+    Eigen::VectorXi mat1D(num_edges);
+    for (size_t i = 0; i < num_edges; ++i) {
+        conn(0, i) = mesh.Cell1DsOrigin[i];
+        conn(1, i) = mesh.Cell1DsEnd[i];
+        mat1D(i)    = mesh.Cell1DsMarker[i];
+    }
 
+    std::vector<Gedim::UCDProperty<double>> emptyProps;
+    util.ExportPoints  ("Cell0Ds.inp", coords, emptyProps, dummy_marker_0D);
+    util.ExportSegments("Cell1Ds.inp", coords, conn, emptyProps, emptyProps, mat1D);
+
+    std::cout << "Esportazione completata!\n";
     return 0;
 }
