@@ -1,39 +1,35 @@
+// PolygonalMesh.hpp
 #pragma once
 
-#include <iostream>
 #include <vector>
 #include <map>
-#include "Eigen/Eigen"
-
-using namespace std;
-using namespace Eigen;
+#include <Eigen/Dense>
 
 namespace PolygonalLibrary {
 
 struct PolygonalMesh
 {
-    unsigned int NumCell0Ds;
-    unsigned int NumCell1Ds;
-    unsigned int NumCell2Ds;
+    unsigned int NumCell0Ds = 0;
+    unsigned int NumCell1Ds = 0;
+    unsigned int NumCell2Ds = 0;
 
-    vector<unsigned int> Cell0DsId;
-    vector<unsigned int> Cell0DsMarker;  
+    std::vector<unsigned int> Cell0DsId;
+    std::vector<unsigned int> Cell0DsMarker;
+    Eigen::MatrixXd           Cell0DsCoordinates;
 
-    vector<unsigned int> Cell1DsId;
-    vector<unsigned int> Cell1DsMarker;    
-    vector<unsigned int> Cell1DsOrigin;    
-    vector<unsigned int> Cell1DsEnd;
+    std::vector<unsigned int> Cell1DsId;
+    std::vector<unsigned int> Cell1DsMarker;
+    std::vector<unsigned int> Cell1DsOrigin;
+    std::vector<unsigned int> Cell1DsEnd;
 
-    vector<unsigned int> Cell2DsId;
-    vector<unsigned int> Cell2DsMarker;
-    vector<vector<unsigned int>> Cell2DsVertices;
-    vector<vector<unsigned int>> Cell2DsEdges;
+    std::vector<unsigned int> Cell2DsId;
+    std::vector<unsigned int> Cell2DsMarker;
+    std::vector<std::vector<unsigned int>> Cell2DsVertices;
+    std::vector<std::vector<unsigned int>> Cell2DsEdges;
 
-    map<unsigned int, unsigned int> Cell0DIdToIndex;
-
-    MatrixXd Cell0DsCoordinates;
-    MatrixXd Cell1DsCoordinates;
-    MatrixXd Cell2DsCoordinates;
+    std::map<unsigned int, unsigned int> Cell0DIdToIndex;
+    std::map<unsigned int, unsigned int> Cell1DIdToIndex;
+    std::map<unsigned int, unsigned int> Cell2DIdToIndex;
 };
 
-}
+} // namespace PolygonalLibrary
