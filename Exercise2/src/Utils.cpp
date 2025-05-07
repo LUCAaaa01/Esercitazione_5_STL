@@ -1,4 +1,3 @@
-// Utils.cpp
 #include "Utils.hpp"
 #include <fstream>
 #include <sstream>
