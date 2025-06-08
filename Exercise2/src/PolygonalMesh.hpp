@@ -26,6 +26,7 @@ struct PolygonalMesh
     std::vector<std::vector<unsigned int>> Cell2DsVertices;
     std::vector<std::vector<unsigned int>> Cell2DsEdges;
 
+    //mi da le posizioni(indici) in cui sono memorizzati i vertici
     std::map<unsigned int, unsigned int> Cell0DIdToIndex;
     std::map<unsigned int, unsigned int> Cell1DIdToIndex;
     std::map<unsigned int, unsigned int> Cell2DIdToIndex;
