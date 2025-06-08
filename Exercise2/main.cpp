@@ -43,16 +43,16 @@ int main()
 
     size_t num_points = mesh.NumCell0Ds;
     Eigen::MatrixXd coords(3, num_points);
-    Eigen::VectorXi dummy_marker_0D(num_points);
+    Eigen::VectorXi dummy_marker_0D(num_points); //export points richiede un array di interi marker tanto lungo quanti sono i punti
     for (size_t i = 0; i < num_points; ++i) {
         coords(0, i) = mesh.Cell0DsCoordinates(0, i);
         coords(1, i) = mesh.Cell0DsCoordinates(1, i);
         coords(2, i) = mesh.Cell0DsCoordinates(2, i);
-        dummy_marker_0D(i) = mesh.Cell0DsMarker[i];
+        dummy_marker_0D(i) = mesh.Cell0DsMarker[i]; 
     }
 
     size_t num_edges = mesh.NumCell1Ds;
-    Eigen::MatrixXi conn(2, num_edges);
+    Eigen::MatrixXi conn(2, num_edges); //matrice di connettività dei lati in cui ogni colonna è un lato con indice vertice di arrivo e di fine
     Eigen::VectorXi mat1D(num_edges);
     for (size_t i = 0; i < num_edges; ++i) {
         conn(0, i) = mesh.Cell1DsOrigin[i];
@@ -60,7 +60,7 @@ int main()
         mat1D(i)    = mesh.Cell1DsMarker[i];
     }
 
-    std::vector<Gedim::UCDProperty<double>> emptyProps;
+    std::vector<Gedim::UCDProperty<double>> emptyProps; //vettore vuoto per soddisfare gli export
     util.ExportPoints  ("Cell0Ds.inp", coords, emptyProps, dummy_marker_0D);
     util.ExportSegments("Cell1Ds.inp", coords, conn, emptyProps, emptyProps, mat1D);
 
